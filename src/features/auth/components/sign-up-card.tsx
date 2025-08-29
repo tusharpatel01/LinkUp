@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { FaGithub } from "react-icons/fa6";
 import { Separator } from "@/components/ui/separator";
 import { signInFlow } from "../types";
+import { TriangleAlert } from "lucide-react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 interface SignUpCardProps{
   setState:(state:signInFlow)=>void;
@@ -25,6 +27,35 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
   const[email,setEmail]=useState("");
   const[password,setPassword]=useState("");
   const[confirmPassword,setConfirmPassword]=useState("");
+  const[pending,setPending]=useState(false);
+  const[error,setError]=useState("");
+  const[name,setName]=useState("");
+
+  const { signIn } = useAuthActions();
+
+  const OnPasswordSignUp=(e:React.FormEvent<HTMLFormElement>)=>{
+    e.preventDefault();
+    if(password!=confirmPassword){
+      setError("password do not matching")
+      return;
+    }
+    setPending(true);
+    signIn("password",{name,email,password,flow:"signUp"})
+    .catch(()=>{
+      setError("something went wrong")
+
+    })
+    .finally(()=>{
+      setPending(false);
+    })
+
+  }
+
+   const OnproviderSignUp=(value:"github"|"google")=>{
+      setPending(true);
+      signIn(value)
+      .finally(()=>{setPending(false)});
+    }
 
 
   return (
@@ -33,15 +64,28 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
         <CardHeader className="px-0 pt-0">
           <CardTitle className="text-lg">signUp to continue</CardTitle>
         </CardHeader>
+         {!!error && (
+          <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6">
+            <TriangleAlert className="size-4"/>
+            <p>{error}</p>
+          </div>
+        )}
 
         <CardDescription>signUp with same or different account</CardDescription>
 
         <CardContent className=" space-y-5 px-0 pb-0">
-          <form  className="space-y-2.5">
+          <form onSubmit={OnPasswordSignUp} className="space-y-2.5">
+           <Input
+            disabled={pending}
+            value={name}
+            onChange={({ target }) => setName(target.value)}
+            placeholder="Full name"
+            required
+          />
             <Input
               value={email}
              onChange={(e) =>setEmail( e.target.value)}
-              disabled={false}
+              disabled={pending}
               required
               placeholder="email"
               type="email"
@@ -51,7 +95,7 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
               className="w-full "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={false}
+              disabled={pending}
               required
               placeholder="password"
               type="password"
@@ -61,7 +105,7 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
               className="w-full "
               value={confirmPassword}
              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={false}
+              disabled={pending}
               required
               placeholder="confirmPassword"
               type="password"
@@ -69,7 +113,7 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
             <Button
               className="w-full "
               type="submit"
-              disabled={false}
+              disabled={pending}
               size={"lg"}
             >
               continue
@@ -80,8 +124,8 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
 
           <div className="flex flex-col gap-y-2.5">
             <Button
-              disabled={false}
-              onClick={() => {}}
+              disabled={pending}
+              onClick={() => OnproviderSignUp("google")}
               variant={"outline"}
               size={"lg"}
               className="w-full relative "
@@ -91,8 +135,8 @@ const SignUpCard = ({setState}:SignUpCardProps) => {
             </Button>
 
             <Button
-              disabled={false}
-              onClick={() => {}}
+              disabled={pending}
+              onClick={() => OnproviderSignUp("github")}
               variant={"outline"}
               size={"lg"}
               className="w-full relative "
