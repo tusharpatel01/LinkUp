@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Doc } from "../../../../convex/_generated/dataModel";
 
 import { InviteModal } from "./invite-modal";
-import { PreferencesModal } from "./preferences-modal";
 import { Hint } from "@/components/hint";
+import { PreferencesModal } from "./preferences-modal";
 
 interface WorkspaceHeaderProps {
   workspace: Doc<"workspaces">;
